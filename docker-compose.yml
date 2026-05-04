@@ -1,0 +1,52 @@
+version: "3.9"
+
+services:
+  php:
+    container_name: smarty_blog_php-fpm
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    volumes:
+      - .:/var/www/html
+      - ./docker/php/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+    environment:
+      APP_ENV: local
+      DATABASE_NAME: smarty_blog
+      DATABASE_HOST: mysql
+      DATABASE_PORT: 3306
+    depends_on:
+      - mysql
+    user: "1000:1000"
+
+  assets:
+    image: node:22-alpine
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+      - node_modules:/var/www/html/node_modules
+    command: sh -c "npm install --no-audit --no-fund && npm run watch:css"
+
+  nginx:
+    image: nginx:1.25
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+
+  mysql:
+    container_name: smarty_blog_mysql
+    image: mysql:8.4
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  mysql_data:
+  node_modules:
