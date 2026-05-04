@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App;
 
-use App\Repository\CategoryRepository;
+use App\Repository\ArticleRepository;
 use Smarty\Smarty;
 
-class Index extends Smarty
+class Article extends Smarty
 {
-    public function __construct(readonly private CategoryRepository $categoryRepository)
+    public function __construct(readonly private ArticleRepository $articleRepository)
     {
         parent::__construct();
 
@@ -27,19 +27,18 @@ class Index extends Smarty
         }
     }
 
-    /**
-     * @throws \Smarty\Exception
-     */
-    public function index(): void
+    public function article(int $id): void
     {
         if (getenv('APP_ENV') === 'local') {
             $this->clearCompiledTemplate();
             $this->clearAllCache();
         }
 
-        $categoriesWithArticles = $this->categoryRepository->findCategoriesWithArticles();
+        $article = $this->articleRepository->findArticleById($id);
+        $relatedArticles = $this->articleRepository->findRelatedArticlesByArticleId($article['id']);
 
-        $this->assign('categories', $categoriesWithArticles);
-        $this->display('index.tpl');
+        $this->assign('article', $article);
+        $this->assign('relatedArticles', $relatedArticles);
+        $this->display('article.tpl');
     }
 }

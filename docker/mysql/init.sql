@@ -14,7 +14,8 @@ CREATE TABLE articles (
             title VARCHAR(255) NOT NULL,
             description VARCHAR(255) NOT NULL,
             text TEXT NOT NULL,
-            views BIGINT NOT NULL DEFAULT 0
+            views BIGINT NOT NULL DEFAULT 0,
+            created_at TIMESTAMP DEFAULT NOW()
 );
 
 CREATE TABLE article_categories (

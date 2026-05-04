@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 namespace App;
@@ -7,7 +6,7 @@ namespace App;
 use App\Repository\CategoryRepository;
 use Smarty\Smarty;
 
-class Index extends Smarty
+class CategoryArticles extends Smarty
 {
     public function __construct(readonly private CategoryRepository $categoryRepository)
     {
@@ -27,19 +26,20 @@ class Index extends Smarty
         }
     }
 
-    /**
-     * @throws \Smarty\Exception
-     */
-    public function index(): void
+    public function categoryArticles(int $categoryId, string $sortBy = 'date', int $page = 1): void
     {
         if (getenv('APP_ENV') === 'local') {
             $this->clearCompiledTemplate();
             $this->clearAllCache();
         }
 
-        $categoriesWithArticles = $this->categoryRepository->findCategoriesWithArticles();
-
-        $this->assign('categories', $categoriesWithArticles);
-        $this->display('index.tpl');
+        $categoryWithArticles = $this->categoryRepository->findCategoryByIdWithArticles(
+            $categoryId,
+            $sortBy,
+            $page
+        );
+        $this->assign('categoryWithArticles', $categoryWithArticles);
+        $this->assign('currentSort', $sortBy);
+        $this->display('category_articles.tpl');
     }
 }
